@@ -20,51 +20,52 @@ for i = 1:(k*Nr)
     user(i) =floor( (i-1)/Nr) + 1;
 end    
 UserId = containers.Map(rx,user);
-ChannelMatrix = sqrt(1/2)*randn(Nr,Nt,k) + sqrt(1/2)*randn(Nr,Nt,k)*1i;
+H = sqrt(1/2)*randn(Nr,Nt,k) + sqrt(1/2)*randn(Nr,Nt,k)*1i;
 S=[];        
-U=[];        
-l=zeros(1,Nt);         
-H_tilda=[]; 
+U=[];           
+H_tilda=zeros(Nr,Nt); 
 Cmax=0; 
 Cr = zeros(1,length(rx));
+C =zeros(1,k);
+L=zeros(1,k);
+ltmp = zeros(1,k);
 flag=1;      
 phase=1;      
-
 while flag == 1
     for r = rx        
         Stmp = union(S,r);
         W = [];
-        H = H_tilda;
-        ltmp = l;
         u = UserId(r);
         r_id = r - ((u-1)*Nr);
-        Utmp = union(U,u);
-        H(u) = [H(u);H(r_id,:,u)];   %index exceeds matrix dimension      
+        Utmp = union(U,u); 
         if phase == 1
             ltmp(u)= ltmp(u) + 1;
         end
-        Ltmp(u) = sum(ltmp(u));
+        Ltmp = sum(ltmp(u));
         for j = Utmp
             H1 = H(r_id,:,j)' * H(r_id,:,j); 
-            H2 = H_tilda(j)' * H_tilda(j) ;
-            Wj(j) = eig(H1 , (Mj*v/Ej)*eye(Nt) + H2);
+            H2 = H_tilda' * H_tilda ;
+            Mj = size(H(r_id,:,j),1); %added
+            Ej = ((Ebs * ltmp(j)) / Ltmp );%added
+            Wj = zeros(Nt,ltmp(j));
+            Wj = eig(H1 , (Mj*v/Ej)*eye(size(H1,2)) + H2); 
+            Wj_tilda = zeros(Nt,ltmp(j));
             for user = Utmp
                 if(user ~= j)
                     H11 = H(r_id,:,user)' * H(r_id,:,user); 
                     H22 = H_tilda(user)' * H_tilda(user) ;
-                    Wj_t(j) = eig(H11 , (Mj*v/Ej)*eye(Nt) + H22);
-                    Wj_tilda(j) = [Wj_tilda(user) Wj_t(user)];
+                    Wj_t = eig(H11 , (Mj*v/Ej)*eye(Nt) + H22);
+                    Wj_tilda = [Wj_tilda Wj_t];
                 end
             end
-            for l = 1:Ltmp(j)
+            for l = 1:ltmp(j)
                Hj = H(r_id,:,j);
-               Dj = Wj' *  Hj' * Hj * Wj ;
+               Dj = Wj' * (( Hj' * Hj) * Wj) ;
                Num = Dj * Dj' ;
                Qj = Wj' * Hj' * Hj ;
-               W = Wj_tilda * Wj_tilda' ;
-               Dnum = ((Ltmp * v / Ebs) * Dj + ( Qj * W * Qj') );
-               Numerator = Num(l,l);
-               Denumerator = Dnum(l,l);
+               Dnum = ((Ltmp * v / Ebs) * Dj + ( Qj * (Wj_tilda * Wj_tilda') * Qj') );
+               Numerator = Num;
+               Denumerator = Dnum;
                SINR_j_l = Numerator / Denumerator ;
                C(j) = C(j) + log2( 1 + SINR_j_l ) ;
             end
@@ -76,12 +77,12 @@ while flag == 1
         Cmax = Cr(r_bar);
         S = union(S,r_bar);
         u_bar = UserId(r_bar);
-        R = setdiff(R,r_bar); 
+        rx = setdiff(rx,r_bar); 
         U = union(U,u_bar);
-        r_bar_ID = r_bar - ((U_bar-1)*Nr);
-        H_tilda(u_bar) = [H_tilda(u_bar); H(r_bar_ID,:,U_bar) ]; %error
+        r_bar_ID = r_bar - ((u_bar-1)*Nr);
+        H_tilda = [H_tilda; H(r_bar_ID,:,u_bar) ]; %error
         if phase == 1 
-            l(u_bar) = l(u_bar) + 1 ;   
+            L(u_bar) = L(u_bar) + 1 ;   
         end    
     elseif phase == 1
         phase = 2;
@@ -90,7 +91,10 @@ while flag == 1
     end    
 end
 disp('\nthe output of the SUBOPTIMAL ALGORITHM 1 are---- ');
-disp('\nselected receive antennas are:',S);
-disp('\nselected users are:',U);
-disp('\ntotal data streams to be transmitted are:',l);
+disp('\nselected receive antennas are:');
+disp(S);
+disp('\nselected users are:');
+disp(U);
+disp('\ntotal data streams to be transmitted are:');
+disp(sum(L));
 % -----------------------END OF PROGRAM------------------------------------
