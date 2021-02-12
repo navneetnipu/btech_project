@@ -25,14 +25,14 @@ S=[];
 U=[];           
 H_tilda=zeros(Nr,Nt); 
 Cmax=0; 
-Cr = zeros(1,length(rx));
-C =zeros(1,k);
+Cr = zeros(1,Nr*k);
 L=zeros(1,k);
 ltmp = zeros(1,k);
 flag=1;      
 phase=1;      
 while flag == 1
-    for r = rx        
+    for r = rx    
+         C = zeros(1,k);
         Stmp = union(S,r);
         W = [];
         u = UserId(r);
@@ -45,8 +45,8 @@ while flag == 1
         for j = Utmp
             H1 = H(r_id,:,j)' * H(r_id,:,j); 
             H2 = H_tilda' * H_tilda ;
-            Mj = size(H(r_id,:,j),1); %added
-            Ej = ((Ebs * ltmp(j)) / Ltmp );%added
+            Mj = size(H(r_id,:,j),1); 
+            Ej = ((Ebs * ltmp(j)) / Ltmp );
             Wj = zeros(Nt,ltmp(j));
             Wj = eig(H1 , (Mj*v/Ej)*eye(size(H1,2)) + H2); 
             Wj_tilda = zeros(Nt,ltmp(j));
@@ -68,7 +68,7 @@ while flag == 1
                Denumerator = Dnum;
                SINR_j_l = Numerator / Denumerator ;
                C(j) = C(j) + log2( 1 + SINR_j_l ) ;
-            end
+            end          
         end
         Cr(r) = sum(C);
     end 
@@ -77,24 +77,32 @@ while flag == 1
         Cmax = Cr(r_bar);
         S = union(S,r_bar);
         u_bar = UserId(r_bar);
-        rx = setdiff(rx,r_bar); 
+        rx = setdiff(rx,r_bar);
         U = union(U,u_bar);
         r_bar_ID = r_bar - ((u_bar-1)*Nr);
-        H_tilda = [H_tilda; H(r_bar_ID,:,u_bar) ]; %error
+        H_tilda = [H_tilda; H(r_bar_ID,:,u_bar) ]; 
         if phase == 1 
             L(u_bar) = L(u_bar) + 1 ;   
         end    
     elseif phase == 1
+        % rx = receive antennas of U not selected in S.
+        rs = [];
+        for x = rx
+            if (ismember(UserId(x),U) == 1) && (~ismember(x,S) == 1)
+                rs = union(rs,x);
+            end
+        end
+        rx = rs;
         phase = 2;
     else
         flag = 0;
     end    
 end
-disp('\nthe output of the SUBOPTIMAL ALGORITHM 1 are---- ');
-disp('\nselected receive antennas are:');
+disp('the output of the SUBOPTIMAL ALGORITHM 1 are---- ');
+disp('selected receive antenna IDs are:');
 disp(S);
-disp('\nselected users are:');
+disp('selected user IDs are:');
 disp(U);
-disp('\ntotal data streams to be transmitted are:');
+disp('total data streams to be transmitted are:');
 disp(sum(L));
 % -----------------------END OF PROGRAM------------------------------------
