@@ -1,3 +1,4 @@
+clc;
 clear all;
 close all;
 disp('Enter the data for the mu mimo single downlink system-----');
@@ -21,41 +22,40 @@ end
 UserId = containers.Map(rx,user);
 ChannelMatrix = sqrt(1/2)*randn(Nr,Nt,k) + sqrt(1/2)*randn(Nr,Nt,k)*1i;
 R = rx;
-S = zeros(Nr*k);
-U = zeros(1,k);
+S = [];
+U = [];
 L = 0;
-H_tilda = [];
+H_tilda = zeros(Nr,Nt);
 W = [];
 Cmax = 0;
 flag = 1;
 Cr = zeros(1,Nr*k);
-Wr = zeros(1,Nr*k);          
-
+Wr = [];          
 while flag == 1   
-    for r = R    
+    for r = R  
+        Csum = 0;
         Stmp = union(S,r);
         Ltmp = L+1;       
         H = H_tilda' * H_tilda ;
         u = UserId(r);
         r_id = r - ((u-1)*Nr);
         hr = ChannelMatrix(r_id,:,u);
-        Wr(r) = eigs( inv(( Ltmp * v / Ebs )*eye( size(H) ) + H ) * ( hr' * hr ) ) ; % error inner dimension must agree.
-        if trace(Wr' * Wr) == 1
-            Wtmp = union(W,Wr(r));            
-            for i = Stmp    
-                  ui =UserId(i);
-                  hi = ChannelMatrix(i,:,ui) ; 
-                  hiWtmpi = square(norm(hi * Wtmp(:,i)));
-                  hiWtmp = 0;
-                  for l_bar = Stmp
-                      if l_bar ~= i
-                          hiWtmp = hiWtmp + square(norm(hi * Wtmp(:,l_bar)));
-                      end
-                  end
-                  Csum = Csum + log2( 1 + ( (hiWtmpi) / ( ( Ltmp * v / Ebs ) + ( hiWtmp ) ) ) ) ;
-            end          
-            Cr(r) = Csum ;            
-        end            
+        Wr(:,r) = eigs( inv(( Ltmp * v / Ebs )*eye( size(H) ) + H ) * ( hr' * hr)  , Nt) ; % error inner dimension must agree.
+        Wtmp = [W Wr(:,r)];    
+        for i = Stmp    
+             ui =UserId(i);
+             i_id = i-((ui-1)*Nr);
+             hi = ChannelMatrix(i_id,:,ui) ; 
+             hiWtmpi = square(norm(hi * Wr(:,i)));
+             hiWtmp = 0;
+             for l_bar = Stmp
+                 if l_bar ~= i
+                      hiWtmp = hiWtmp + square(norm(hi * Wr(:,l_bar)));
+                 end
+             end
+             Csum = Csum + log2( 1 + ( (hiWtmpi) / ( ( Ltmp * v / Ebs ) + ( hiWtmp ) ) ) ) ;
+         end          
+         Cr(r) = Csum ;                       
     end    
     [r_val,r_bar] = max(Cr); 
     if Cr(r_bar) > Cmax       
@@ -64,15 +64,19 @@ while flag == 1
         U = union(U,UserId(r_bar));
         R = setdiff(R,r_bar);
         L = L+1;     
-        W = [W Wr(r_bar)]; 
-        Hr = ChannelMatrix(r_bar,:,UserId(i));
+        W = [W Wr(:,r_bar)];
+        r_bar_id = r_bar - ((UserId(r_bar) -1)*Nr) ;
+        Hr = ChannelMatrix(r_bar_id,:,UserId(r_bar));
         H_tilda = [H_tilda;Hr];        
     else       
         flag = 0; 
     end    
 end
-disp('\nthe output of the SUBOPTIMAL ALGORITHM 1 are---- ');
-disp('\nselected receive antennas are:',S);
-disp('\nselected users are:',U);
-disp('\ntotal data streams to be transmitted are:',L);
+disp('the output of the SUBOPTIMAL ALGORITHM 2 are---- ');
+disp('selected receive antenna IDs are:');
+disp(S);
+disp('selected user IDs are:');
+disp(U);
+disp('total data streams to be transmitted are:');
+disp(L);
 % -----------------------END OF PROGRAM------------------------------------
