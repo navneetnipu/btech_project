@@ -1,79 +1,80 @@
-function [ S , U , l ] = SuboptimalAlgorithm2( Nt,Nr,k )
+function [SumCapacity,SelectedReceiveAntenna,SelectedUser,DataStreams ] = SuboptimalAlgorithm2( NumOfTransmitAntennas,NumOfReceiveAntennasPerUser, VarianceSq,NumOfUsers,SNRindB )
 
-%using SUBOPTIMAL ALGORITHM 2 for JOINT USER AND RECEIVE ANTENNA SELECTION
-%to provide suboptimal results of capacity and reduce the computaional
-%complexity in MULTIUSER MIMO SYSTEMS.
-
-% In this algorithm we treat each receive antenna as a separete user and
-% calculate its corresponding channel capacity and thus this algorithm have
-% less computational complexity than SUBOPTIMAL ALGORITHM 1.
-
-% The OBJECTIVE of this SUBOPTIMAL ALGORITHM 2 is to generate a subset of
-% receive antennas (subset_receive_antennas) for every selected user
-% (user_set) which maximizes the sum capacity and generating their
-% corresponding data streams (data_streams) by treatimg each receive
-% antenna as a separate candidate user to as to reduce the computational
-% complexity.
-
-clc;
-close all;
-clear all;
-
-R = [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15] ; % receive antenna set with ID.
-S = zeros(15);
+Nt = NumOfTransmitAntennas;
+Nr = NumOfReceiveAntennasPerUser;
+v = VarianceSq;
+k = NumOfUsers;
+SNR = power(10,SNRindB/10);
+Ebs =SNR * v;
+rx = zeros(1,k*Nr);
+user = zeros(1,k*Nr);
+for i = 1:(k*Nr)
+    rx(i) = i;
+    user(i) =floor( (i-1)/Nr) + 1;
+end    
+UserId = containers.Map(rx,user);
+ChannelMatrix = sqrt(1/2)*randn(Nr,Nt,k) + sqrt(1/2)*randn(Nr,Nt,k)*1i;
+R = rx;
+S = [];
+U = [];
 L = 0;
-H_tilda = zeros(15);
-W = zeros(15);
+H_tilda = zeros(Nr,Nt);
+W = [];
 Cmax = 0;
 flag = 1;
-Cr = zeros(15);
-Wr = zeros(15);
-
-while flag == 1
-   
-    for r = R % for every receive antenna in the set R.
-    
-        Stmp = horzcat(S,r);
-        Ltmp = L+1;
-        
-        % find the precoding matrix only for the candidate antenna.
-        
-        Wr(r) = PrecodingMatrixMax( H,L,SIGMArSQ,Ebs,j,U,r );
-        
-        if trace(Wr' * Wr) == 1
-            
-            Wtmp = horzcat(W,Wr(r));
-            
-            % calculate the sum capacity Cr
-            
-            Cr(r) = SumCapacitySA2( S,H,L,SIGMArSQ,Ebs );
-            
-        end    
-        
-    end
-    
-    [r_val,r_bar] = max(Cr); % generating the maximum value of sum capacity and the corresponding receive antenna value of maximum candidate antenna.
-    
-    if Cr(r_bar) > Cmax
-       
-        Cmax = Cr(r_bar);
-        S = horzcat(S,r_bar);
-        R(r_bar) = [];
-        L = L+1; % increasing the data sreams by 1 on getting a new  r_bar value.
-        
-        Wr = PrecodingMatrixMax( H,L,SIGMArSQ,Ebs,j,U,r_bar ); % generating the precoding matrix for r_bar receive antenna.
-        W = horzcat(W,Wr);
-        
-        Hr = receiveAntennaChannelVector( H,r_bar ); % generating the channel vector for r_bar receive antenna.
-        H_tilda = horzcat(H_tilda,Hr);
-        
-    else
-        
-        flag = 0; % changing flag value for stop a particular loop or conditional statements.
-        
+Cr = zeros(1,Nr*k);
+Wr = [];          
+while flag == 1  
+    Cr = zeros(1,Nr*k);
+   if length(S)<Nt
+    for r = R  
+        Csum = 0;
+        Stmp = union(S,r);
+        Ltmp = L+1;       
+        H = H_tilda' * H_tilda ;
+        u = UserId(r);
+        r_id = r - ((u-1)*Nr);
+        hr = ChannelMatrix(r_id,:,u);
+        Wr(:,r) = eigs(inv(( Ltmp * v / Ebs )*eye( size(H) ) + H ) * ( hr' * hr)  , Nt) ; % error inner dimension must agree.
+        Wtmp = [W Wr(:,r)];    
+        for i = Stmp    
+             ui =UserId(i);
+             i_id = i-((ui-1)*Nr);
+             hi = ChannelMatrix(i_id,:,ui) ; 
+             hiWtmpi = norm(hi * Wr(:,i))^2;
+             hiWtmp = 0;
+             for l_bar = Stmp
+                 if l_bar ~= i
+                      hiWtmp = hiWtmp + square(norm(hi * Wr(:,l_bar)));
+                 end
+             end
+             Csum = Csum + log2( 1 + ( (hiWtmpi) / ( ( Ltmp * v / Ebs ) + ( hiWtmp ) ) ) ) ;
+         end          
+         Cr(r) = Csum ;                       
     end    
-    
+    [r_val,r_bar] = max(Cr); 
+    if Cr(r_bar)+Cmax > Cmax       
+        Cmax = Cr(r_bar);
+        S = union(S,r_bar);
+        U = union(U,UserId(r_bar));
+        R = setdiff(R,r_bar);
+        L = L+1;     
+        W = [W Wr(:,r_bar)];
+        r_bar_id = r_bar - ((UserId(r_bar) -1)*Nr) ;
+        Hr = ChannelMatrix(r_bar_id,:,UserId(r_bar));
+        H_tilda = [H_tilda;Hr];        
+    else       
+        flag = 0; 
+    end 
+    else
+        flag = 0;
+    end
 end
 
-end
+SumCapacity = Cmax;
+SelectedReceiveAntenna = S;
+SelectedUser = U;
+DataStreams = L;
 
+end
+% -----------------------END OF PROGRAM------------------------------------

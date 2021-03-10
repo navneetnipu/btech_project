@@ -1,94 +1,102 @@
-function [ S, U , l  ] = SuboptimalAlgorithm1( Nt,Nr,K )
+function [ SumCapacity,SelectedReceiveAntenna,SelectedUser,DataStreams ] = SuboptimalAlgorithm1( NumOfTransmitAntennas,NumOfReceiveAntennasPerUser, VarianceSq,NumOfUsers,SNRindB)
 
-%using SUBOPTIMAL ALGORITHM 1 for JOINT USER AND RECEIVE ANTENNA SELECTION
-%to provide suboptimal results of capacity and reduce the computaional
-%complexity in MULTIUSER MIMO SYSTEMS.
-
-% OBJECTIVE of this SUBOPTIMAL ALGORITHM 1 is to generate a subset of
-% receive antennas (subset_receive_antennas) for every selected user
-% (user_set) which maximizes the sum capacity and generating their
-% corresponding data streams (data_streams).
-
-clc;
-close all;
-clear all;
-
-% given data to execute the program.
-
-
-
-R = [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15];%receive antenna complete set for all users.
-
-S=[];        %set of receive antenna selected.
-U=[];        %set of users selected.
-l=0;         %data streams for user.
-H_tilda=[];  %H channael vector for non candidate users.
-Cmax=0;      %maximum channel capacity 
-flag=1;      %variable for loop
-phase=1;     %variable for conditional statements.
-C=zeros(length(r));
-
-H = channelMatrix( Mj,Nt,k); %generating the channel vector for each k users;
-
-while flag == 1
-   
-    for r = R
-        
-        Stmp = horzcat(S,r);
-        W = [];
-        H = H_tilda;
-        ltmp = l;
-        u = UsrID_mapping( r );
-        Utmp = horzcat(U,u);
-        Hu = H(:,:,u); % generating channel vector for user u.
-        
+Nt = NumOfTransmitAntennas;
+Nr = NumOfReceiveAntennasPerUser;
+v = VarianceSq;
+k = NumOfUsers;
+SNR = power(10,SNRindB/10);
+Ebs =SNR * v;
+rx = zeros(1,k*Nr);
+user = zeros(1,k*Nr);
+for i = 1:(k*Nr)
+    rx(i) = i;
+    user(i) =floor( (i-1)/Nr) + 1;
+end    
+UserId = containers.Map(rx,user);
+H = sqrt(1/2)*randn(Nr,Nt,k) + sqrt(1/2)*randn(Nr,Nt,k)*1i;
+S=[];        
+U=[];           
+H_tilda=zeros(Nr,Nt); 
+Cmax=0; 
+L=zeros(1,k);
+ltmp = zeros(1,k);
+flag=1;      
+phase=1; 
+while flag == 1  
+   if length(S)< Nt
+    Cr = zeros(1,Nr*k);
+    for r = rx  
+        Stmp = union(S,r);
+        u = UserId(r);
+        r_id = r - ((u-1)*Nr);
+        Utmp = union(U,u); 
         if phase == 1
-           
             ltmp(u)= ltmp(u) + 1;
-     
         end
-        
-        Ltmp = sum(ltmp); % calculating the total data strems for all selected users.
-        
-        Mj = size(Hu , 1);
-        Ej = (l(u) * Ebs ) / (Ltmp) ; % equal power per data stream (equal power allocation shcheme.)
-        W(u) = precodingMatrix( k,j,U,H,Mj,SIGMAjSq,Ej,Nt,Lj); % generating precoding matrix for user u;
-        if trace( W(u)' * W(u) ) == l(u) % if the precoding matrix follows the power constrain then following will be calculated.
-           
-            C(r) = SumCapacity(Mj,Utmp,k,SINR ); % calculating the sum capacity.
-            
+        Ltmp = sum(ltmp);
+        C = zeros(1,k);
+        for j = Utmp          
+            H1 = H(r_id,:,j)' * H(r_id,:,j); 
+            H2 = H_tilda' * H_tilda ;
+            Mj = size(H(r_id,:,j),1); 
+            Ej = ((Ebs * ltmp(j)) / Ltmp );
+            Wj = zeros(Nt,ltmp(j));
+            Wj = eig(H1 , (Mj*v/Ej)*eye(size(H1,2)) + H2); 
+            Wj_tilda = zeros(Nt,ltmp(j));
+            for user = Utmp
+                if user ~= j
+                    H11 = H(r_id,:,user)' * H(r_id,:,user); 
+                    H22 = H_tilda(user)' * H_tilda(user) ;
+                    Wj_t = eig(H11 , (Mj*v/Ej)*eye(Nt) + H22);
+                    Wj_tilda = [Wj_tilda Wj_t];
+                end
+            end
+            for l = 1:ltmp(j)
+               Hj = H(r_id,:,j);
+               Dj = Wj' * (( Hj' * Hj) * Wj) ;
+               Num = Dj * Dj' ;
+               Qj = Wj' * Hj' * Hj ;
+               Dnum = ((Ltmp * v / Ebs) * Dj + ( Qj * (Wj_tilda * Wj_tilda') * Qj') );
+               Numerator = Num;
+               Denumerator = Dnum;
+               SINR_j_l = Numerator / Denumerator ;
+               C(j) = C(j) + log2( 1 + SINR_j_l ) ;
+            end 
         end
+        Cr(r) = sum(C);
     end 
-    
-    [r_max,r_bar] =max(C); % getting the value of r for which the capacity is maximum.
-    
-    if C(r_bar) > Cmax
-       
-        Cmax = C(r_bar); % assigning Cmax the maximum value of sum capacity.
-        
-        S = horzcat(S,r_bar); % adding r_bar to receive antenna set as it provides maximum capacity.
-        R(r_bar)=[]; % removing selected receive antenna from the set of unselected receive antenna set R.
-        u_bar = UsrID_mapping( r_bar );
-        U = horzcat(U,u_bar);
-        H_tilda(u_bar) = vertcat(H_tilda(u_bar), Hu );
-        
-        if phase == 1
-           
-            l(u_bar) = l(u_bar) + 1 ;
-            
+    [r_max,r_bar] = max(Cr);     
+    if Cr(r_bar)+Cmax > Cmax
+        Cmax = Cr(r_bar)+Cmax;
+        S = union(S,r_bar);
+        u_bar = UserId(r_bar);
+        rx = setdiff(rx,r_bar);
+        U = union(U,u_bar);
+        r_bar_ID = r_bar - ((u_bar-1)*Nr);
+        H_tilda = [H_tilda; H(r_bar_ID,:,u_bar) ]; 
+        if phase == 1 
+            L(u_bar) = L(u_bar) + 1 ;   
         end    
-        
     elseif phase == 1
-        
-        % r = remaining antennas of users in U not been selected in S
+        rs = [];
+        for x = rx
+            if ismember(UserId(x),U) == 1
+                rs = union(rs,x);
+            end
+        end       
+        rx = rs;
         phase = 2;
-        
     else
-        
         flag = 0;
-        
-    end    
-    
+    end   
+   else
+       flag=0;
+   end
 end
 
+SumCapacity = Cmax;
+SelectedReceiveAntenna = S;
+SelectedUser = U;
+DataStreams = sum(L);
 end
+% -----------------------END OF PROGRAM------------------------------------
