@@ -25,8 +25,8 @@ for K=1:20
     SumCapacityArr2(K) = SumCapacityArr2(K) + SumCapacity2;
 end
 end
-SumCapacityArr1(K) = SumCapacityArr1(K)./1000;
-SumCapacityArr2(K) = SumCapacityArr2(K)./1000;
+SumCapacityArr1 = SumCapacityArr1/1000;
+SumCapacityArr2 = SumCapacityArr2/1000;
 figure(1)
 plot(user1,SumCapacityArr1,'b')
 hold on
@@ -40,8 +40,8 @@ hold off;
 % plotting SUMCAPACITY versus SNRdB plot.
 
 snr1 = zeros(1,35);
-SumCapacityArr1 = zeros(1,35);
-SumCapacityArr2 = zeros(1,35);
+SumCapacityArr1 = zeros(1,36);
+SumCapacityArr2 = zeros(1,36);
 for iteration = 1:1000
 K=1;
 for SNRdB1 = -5:30
@@ -57,8 +57,8 @@ for SNRdB1 = -5:30
     K=K+1;
 end    
 end
-SumCapacityArr1(K) = SumCapacityArr1(K)./1000;
-SumCapacityArr2(K) = SumCapacityArr2(K)./1000;
+SumCapacityArr1 = SumCapacityArr1/1000;
+SumCapacityArr2 = SumCapacityArr2/1000;
 figure(2)
 plot(snr1, SumCapacityArr1,'b')
 hold on
