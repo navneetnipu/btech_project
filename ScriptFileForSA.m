@@ -28,9 +28,9 @@ end
 SumCapacityArr1 = SumCapacityArr1/1000;
 SumCapacityArr2 = SumCapacityArr2/1000;
 figure(1)
-plot(user1,SumCapacityArr1,'b')
+plot(user1,SumCapacityArr1,'b--o')
 hold on
-plot(user1,SumCapacityArr2,'g')
+plot(user1,SumCapacityArr2,'r--*')
 title('sumcapacity vs number of users');
 xlabel('number of users');
 ylabel('sum capacity');
@@ -60,9 +60,9 @@ end
 SumCapacityArr1 = SumCapacityArr1/1000;
 SumCapacityArr2 = SumCapacityArr2/1000;
 figure(2)
-plot(snr1, SumCapacityArr1,'b')
+plot(snr1, SumCapacityArr1,'b--o')
 hold on
-plot(snr1, SumCapacityArr2,'g')
+plot(snr1, SumCapacityArr2,'g--*')
 title('sumcapacity vs SNRdB');
 xlabel('SNRdB');
 ylabel('sum capacity');
