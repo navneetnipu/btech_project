@@ -28,9 +28,16 @@ end
 
 figure(1)
 plot(user1,SumCapacityArr1);
+title('sumcapacity vs number of users for SA1');
+xlabel('number of users');
+ylabel('sum capacity');
 
 figure(2)
 plot(user1,SumCapacityArr2);
+title('sumcapacity vs number of users for SA2');
+xlabel('number of users');
+ylabel('sum capacity');
+
 
 
 % plotting SUMCAPACITY versus SNRdB plot.
@@ -39,9 +46,9 @@ K=1;
 snr1 = zeros(1,35);
 SumCapacityArr1 = zeros(1,35);
 SumCapacityArr2 = zeros(1,35);
-for SNRdB = -5:30
+for SNRdB1 = -5:30
     
-    snr1(K) = SNRdB;
+    snr1(K) = SNRdB1;
     
     [ SumCapacity1,SelectedReceiveAntenna1,SelectedUser1,DataStreams1 ] = SuboptimalAlgorithm1( NumOfTransmitAntennas1,NumOfReceiveAntennasPerUser1, VarianceSq1,NumOfUsers1,SNRdB1);
     [ SumCapacity2,SelectedReceiveAntenna2,SelectedUser2 ,DataStreams2 ] = SuboptimalAlgorithm2( NumOfTransmitAntennas1,NumOfReceiveAntennasPerUser1, VarianceSq1,NumOfUsers1,SNRdB1);
@@ -52,8 +59,15 @@ for SNRdB = -5:30
     K=K+1;
 end    
 
-figure(1)
+figure(3)
 plot(snr1, SumCapacityArr1);
+title('sumcapacity vs SNRdB for SA1');
+xlabel('SNRdB');
+ylabel('sum capacity');
 
-figure(2)
+
+figure(4)
 plot(snr1, SumCapacityArr2);
+title('sumcapacity vs SNRdB for SA2');
+xlabel('SNRdB');
+ylabel('sum capacity');

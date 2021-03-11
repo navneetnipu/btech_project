@@ -53,7 +53,7 @@ while flag == 1
             for user = Utmp
                 if user ~= j
                     H11 = H(r_id,:,user)' * H(r_id,:,user); 
-                    H22 = H_tilda(user)' * H_tilda(user) ;
+                    H22 = H_tilda' * H_tilda ;
                     Wj_t = eig(H11 , (Mj*v/Ej)*eye(Nt) + H22);
                     Wj_tilda = [Wj_tilda Wj_t];
                 end
