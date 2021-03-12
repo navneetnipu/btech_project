@@ -41,7 +41,7 @@ while flag == 1
             Mj = size(H(r_id,:,j),1); 
             Ej = ((Ebs * ltmp(j)) / Ltmp );
             Wj = zeros(Nt,ltmp(j));
-            Wj = eig(H1 , (Mj*v/Ej)*eye(size(H1,2)) + H2); 
+            Wj = eig(H1 , (Mj*v/Ej)*eye(size(H1)) + H2); 
             Wj_tilda = zeros(Nt,ltmp(j));
             for user = Utmp
                 if user ~= j
@@ -66,8 +66,8 @@ while flag == 1
         Cr(r) = sum(C);
     end 
     [r_max,r_bar] = max(Cr);     
-    if Cr(r_bar)+Cmax > Cmax
-        Cmax = Cr(r_bar)+Cmax;
+    if Cr(r_bar) > Cmax
+        Cmax = Cr(r_bar);
         S = union(S,r_bar);
         u_bar = UserId(r_bar);
         rx = setdiff(rx,r_bar);

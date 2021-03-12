@@ -53,7 +53,7 @@ while flag == 1
          Cr(r) = Csum ;                       
     end    
     [r_val,r_bar] = max(Cr); 
-    if Cr(r_bar)+Cmax > Cmax       
+    if Cr(r_bar) > Cmax       
         Cmax = Cr(r_bar);
         S = union(S,r_bar);
         U = union(U,UserId(r_bar));
