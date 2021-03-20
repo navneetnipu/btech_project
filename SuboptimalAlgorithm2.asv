@@ -1,12 +1,5 @@
-clc;
-clear all;
-close all;
-disp('Enter the data for the mu mimo single downlink system-----');
-NumOfTransmitAntennas = input('\nEnter the values for number of transmit antennas Nt:');
-NumOfReceiveAntennasPerUser = input('\nnumber of receive antennas per user Nr:');
-VarianceSq = input('\nEnter the value for the variance square for the complex gaussian zero mean random variables :');
-NumOfUsers = input('\nEnter the value for total number of users :');
-SNRindB = input('\nEnter the value for SNR in dB :');
+function [SumCapacity,SelectedReceiveAntenna,SelectedUser,DataStreams ] = SuboptimalAlgorithm2( NumOfTransmitAntennas,NumOfReceiveAntennasPerUser, VarianceSq,NumOfUsers,SNRindB )
+
 Nt = NumOfTransmitAntennas;
 Nr = NumOfReceiveAntennasPerUser;
 v = VarianceSq;
@@ -33,7 +26,8 @@ Cr = zeros(1,Nr*k);
 Wr = [];          
 while flag == 1  
     Cr = zeros(1,Nr*k);
-   if L < Nt
+    Ltmp = 0;
+   if length(S)<Nt
     for r = R  
         Csum = 0;
         Stmp = union(S,r);
@@ -42,17 +36,17 @@ while flag == 1
         u = UserId(r);
         r_id = r - ((u-1)*Nr);
         hr = ChannelMatrix(r_id,:,u);
-        Wr(:,r) = eigs(inv(( Ltmp * v / Ebs )*eye( size(H,2) ) + H ) * ( hr' * hr)  , Nt) ; 
+        Wr(:,r) = eigs(inv(( Ltmp * v / Ebs )*eye( size(H) ) + H ) * ( hr' * hr)  , Nt) ; 
         Wtmp = [W Wr(:,r)];    
         for i = Stmp    
              ui =UserId(i);
              i_id = i-((ui-1)*Nr);
              hi = ChannelMatrix(i_id,:,ui) ; 
-             hiWtmpi = (norm(hi * Wr(:,i))) ^ 2;
+             hiWtmpi = norm(hi * Wr(:,i))^2;
              hiWtmp = 0;
              for l_bar = Stmp
                  if l_bar ~= i
-                      hiWtmp = hiWtmp + (norm(hi * Wr(:,l_bar))) ^ 2;
+                      hiWtmp = hiWtmp + square(norm(hi * Wr(:,l_bar)));
                  end
              end
              Csum = Csum + log2( 1 + ( (hiWtmpi) / ( ( Ltmp * v / Ebs ) + ( hiWtmp ) ) ) ) ;
@@ -79,11 +73,10 @@ while flag == 1
     end
 end
 
-disp('the output of the SUBOPTIMAL ALGORITHM 2 are---- ');
-disp('selected receive antenna IDs are:');
-disp(S);
-disp('selected user IDs are:');
-disp(U);
-disp('total data streams to be transmitted are:');
-disp(L);
+SumCapacity = Cmax;
+SelectedReceiveAntenna = S;
+SelectedUser = U;
+DataStreams = L;
+
+end
 % -----------------------END OF PROGRAM------------------------------------

@@ -26,7 +26,7 @@ Cr = zeros(1,Nr*k);
 Wr = [];          
 while flag == 1  
     Cr = zeros(1,Nr*k);
-   if length(S)<Nt
+   if L < Nt
     for r = R  
         Csum = 0;
         Stmp = union(S,r);
@@ -35,17 +35,17 @@ while flag == 1
         u = UserId(r);
         r_id = r - ((u-1)*Nr);
         hr = ChannelMatrix(r_id,:,u);
-        Wr(:,r) = eigs(inv(( Ltmp * v / Ebs )*eye( size(H) ) + H ) * ( hr' * hr)  , Nt) ; % error inner dimension must agree.
+        Wr(:,r) = eigs(inv(( Ltmp * v / Ebs )*eye( size(H,2) ) + H ) * ( hr' * hr)  , Nt) ; 
         Wtmp = [W Wr(:,r)];    
         for i = Stmp    
              ui =UserId(i);
              i_id = i-((ui-1)*Nr);
              hi = ChannelMatrix(i_id,:,ui) ; 
-             hiWtmpi = norm(hi * Wr(:,i))^2;
+             hiWtmpi = (norm(hi * Wr(:,i))) ^ 2;
              hiWtmp = 0;
              for l_bar = Stmp
                  if l_bar ~= i
-                      hiWtmp = hiWtmp + square(norm(hi * Wr(:,l_bar)));
+                      hiWtmp = hiWtmp + (norm(hi * Wr(:,l_bar))) ^ 2;
                  end
              end
              Csum = Csum + log2( 1 + ( (hiWtmpi) / ( ( Ltmp * v / Ebs ) + ( hiWtmp ) ) ) ) ;
@@ -62,6 +62,7 @@ while flag == 1
         W = [W Wr(:,r_bar)];
         r_bar_id = r_bar - ((UserId(r_bar) -1)*Nr) ;
         Hr = ChannelMatrix(r_bar_id,:,UserId(r_bar));
+        H_tilda( ~any(H_tilda,2), : ) = [];
         H_tilda = [H_tilda;Hr];        
     else       
         flag = 0; 
