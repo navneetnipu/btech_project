@@ -39,8 +39,7 @@ while flag == 1
    if length(S)< Nt
     Cr = zeros(1,Nr*k);
     H = zeros(Nr,Nt,k);
-    ltmp = zeros(1,k);
-    ltmp(u_bar) = ltmp(u_bar) + L(u_bar) ;
+    ltmp = L;
     for r = rx  
         Stmp = union(S,r);
         u = UserId(r);
@@ -81,6 +80,7 @@ while flag == 1
                Dj = Wj' *  Hj' * Hj * Wj ;
                Num = Dj * Dj' ;
                Qj = Wj' * Hj' * Hj ;
+               Wj_tilda(:, ~any(Wj_tilda,1) ) = [];
                Dnum = ((Ltmp * v / Ebs) * Dj + ( Qj * Wj_tilda * Wj_tilda' * Qj') );
                Numerator = Num;
                Denumerator = Dnum;
@@ -101,7 +101,7 @@ while flag == 1
         H_tilda( ~any(H_tilda,2), : ) = [];
         H_tilda = [H_tilda; H(:,:,u_bar) ]; 
         if phase == 1 
-            L(u_bar) = L(u_bar) + 1 ;   
+            L(u_bar) = L(u_bar) + 1 ;  
         end    
     elseif phase == 1
         rs = [];
@@ -119,7 +119,7 @@ while flag == 1
        flag=0;
    end
 end
-disp('the output of the SUBOPTIMAL ALGORITHM 1 are---- ');
+enddisp('the output of the SUBOPTIMAL ALGORITHM 1 are---- ');
 disp('selected receive antenna IDs are:');
 disp(S);
 disp('selected user IDs are:');

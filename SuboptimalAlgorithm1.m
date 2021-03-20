@@ -26,8 +26,8 @@ while flag == 1
    if length(S)< Nt
     Cr = zeros(1,Nr*k);
     H = zeros(Nr,Nt,k);
-    ltmp = L;
     for r = rx  
+        ltmp = L;
         Stmp = union(S,r);
         u = UserId(r);
         r_id = r - ((u-1)*Nr);

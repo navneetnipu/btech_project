@@ -16,7 +16,7 @@ SNRindB1 = input('\nEnter the value for SNR in dB :');
 user2 = zeros(1,20);
 SumCapacityArr1 = zeros(1,20);
 SumCapacityArr2 = zeros(1,20);
-for SNRindB2=[20]
+for SNRindB2=[0 10 20]
 for iteration = 1:100
 for K=1:20
     user2(K)=K;
@@ -31,7 +31,7 @@ SumCapacityArr2 = SumCapacityArr2/100;
 figure(1)
 plot(user2,SumCapacityArr1,'b--*')
 hold on
-plot(user1,SumCapacityArr2,'r--*')
+plot(user2,SumCapacityArr2,'r--*')
 title('sumcapacity vs number of users');
 xlabel('number of users');
 ylabel('sum capacity');
