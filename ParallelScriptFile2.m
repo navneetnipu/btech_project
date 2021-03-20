@@ -16,7 +16,7 @@ SNRindB1 = input('\nEnter the value for SNR in dB :');
 snr1 = zeros(1,35);
 SumCapacityArr1 = zeros(1,36);
 SumCapacityArr2 = zeros(1,36);
-for iteration = 1:1000
+for iteration = 1:100
 K=1;
 for SNRdB1 = -5:30
     
@@ -31,10 +31,10 @@ for SNRdB1 = -5:30
     K=K+1;
 end    
 end
-SumCapacityArr1 = SumCapacityArr1/1000;
-SumCapacityArr2 = SumCapacityArr2/1000;
+SumCapacityArr1 = SumCapacityArr1/100;
+SumCapacityArr2 = SumCapacityArr2/100;
 figure(2)
-plot(snr1, SumCapacityArr1,'b--o')
+plot(snr1, SumCapacityArr1,'b--*')
 hold on
 plot(snr1, SumCapacityArr2,'r--*')
 title('sumcapacity vs SNRdB');
