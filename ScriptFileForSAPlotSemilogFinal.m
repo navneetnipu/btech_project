@@ -29,9 +29,9 @@ for SNRindB2=[0 10 20 30]
     SumCapacityArr1 = SumCapacityArr1/1000;
     SumCapacityArr2 = SumCapacityArr2/1000;
     figure(1)
-    plot(user2,SumCapacityArr1,'b--*','linewidth',2)
+    semilogx(user2,SumCapacityArr1,'b-*','linewidth',2)
     hold on
-    plot(user2,SumCapacityArr2,'r--*','linewidth',2)
+    semilogx(user2,SumCapacityArr2,'r-*','linewidth',2)
     title('sumcapacity vs number of users');
     xlabel('number of users');
     ylabel('sum capacity');
@@ -64,9 +64,9 @@ end
 SumCapacityArr1 = SumCapacityArr1/1000;
 SumCapacityArr2 = SumCapacityArr2/1000;
 figure(2)
-plot(snr1, SumCapacityArr1,'b--*','linewidth',2)
+semilogx(snr1, SumCapacityArr1,'b-*','linewidth',2)
 hold on
-plot(snr1, SumCapacityArr2,'r--*','linewidth',2)
+semilogx(snr1, SumCapacityArr2,'r-*','linewidth',2)
 title('sumcapacity vs SNRdB');
 xlabel('SNRdB');
 ylabel('sum capacity');
