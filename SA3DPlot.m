@@ -30,15 +30,17 @@ for SNRindB2=[0 10 20 30]
     SumCapacityArr2 = SumCapacityArr2/100;
     figure(1)
     plot(user2,SumCapacityArr1,'b--*','linewidth',2)
-    text(SNRindB2,10,'\leftarrow \SNRindB2')
     hold on
     plot(user2,SumCapacityArr2,'r--*','linewidth',2)
-    text(SNRindB2,10,'\leftarrow \SNRindB2)')
     title('sumcapacity vs number of users');
     xlabel('number of users');
     ylabel('sum capacity');
     legend('SA1','SA2','location','northwest')
     hold on
+    figure(2)
+    surf(user2,SumCapacityArr1,0,'b--*','linewidth',2)
+    hold on
+    surf(user2,SumCapacityArr2,0,'r--*','linewidth',2)
     grid on
 end
 hold off;

@@ -30,8 +30,10 @@ for SNRindB2=[0 10 20 30]
     SumCapacityArr2 = SumCapacityArr2/1000;
     figure(1)
     plot(user2,SumCapacityArr1,'b--*','linewidth',2)
+    text(SNRindB2,10,'\leftarrow \SNRindB2 dB')
     hold on
     plot(user2,SumCapacityArr2,'r--*','linewidth',2)
+    text(SNRindB2,10,'\leftarrow sin(\pi)')
     title('sumcapacity vs number of users');
     xlabel('number of users');
     ylabel('sum capacity');
@@ -66,7 +68,7 @@ SumCapacityArr2 = SumCapacityArr2/1000;
 figure(2)
 plot(snr1, SumCapacityArr1,'b--*','linewidth',2)
 hold on
-plot(snr1, SumCapacityArr2,'r--*',)
+plot(snr1, SumCapacityArr2,'r--*','linewidth',2)
 title('sumcapacity vs SNRdB');
 xlabel('SNRdB');
 ylabel('sum capacity');
