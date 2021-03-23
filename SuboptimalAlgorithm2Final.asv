@@ -69,16 +69,10 @@ while flag == 1
                         hiWtmp = hiWtmp + (norm(hi * Wr(:,l_bar))) ^ 2;
                     end
                 end
-                
-                % calculating the Sum capacity for receive antenna r
-                
                 Csum = Csum + log2( 1 + ( (hiWtmpi) / ( ( Ltmp * v / Ebs ) + ( hiWtmp ) ) ) ) ;
             end
             Cr(r) = Csum ;
         end
-        
-         % finding the receive antenna which provides maximum sum capacity
-        
         [r_val,r_bar] = max(Cr);
         if Cr(r_bar) > Cmax
             Cmax = Cr(r_bar);
@@ -90,9 +84,6 @@ while flag == 1
             r_bar_id = r_bar - ((UserId(r_bar) -1)*Nr) ;
             Hr = ChannelMatrix(r_bar_id,:,UserId(r_bar));
             H_tilda( ~any(H_tilda,2), : ) = [];
-            
-            % updating H tilda matrix
-            
             H_tilda = [H_tilda;Hr];
         else
             flag = 0;
@@ -101,8 +92,6 @@ while flag == 1
         flag = 0;
     end
 end
-
-% generaing the required output
 
 SumCapacity = Cmax;
 SelectedReceiveAntenna = S;

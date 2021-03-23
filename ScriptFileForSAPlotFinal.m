@@ -28,6 +28,7 @@ for SNRindB2=[0 10 20 30]
     end
     SumCapacityArr1 = SumCapacityArr1/100;
     SumCapacityArr2 = SumCapacityArr2/100;
+    
     figure(1)
     plot(user2,SumCapacityArr1,'b--*','linewidth',2)
     text(SNRindB2,10,'\leftarrow \SNRindB2')
@@ -65,6 +66,7 @@ for iteration = 1:100
 end
 SumCapacityArr1 = SumCapacityArr1/100;
 SumCapacityArr2 = SumCapacityArr2/100;
+
 figure(2)
 plot(snr1, SumCapacityArr1,'b--*','linewidth',2)
 hold on
@@ -75,4 +77,5 @@ ylabel('sum capacity');
 legend('SA1','SA2','location','northwest')
 grid on
 hold off;
+
 %--------------------------END OF PROGRAME---------------------------------
