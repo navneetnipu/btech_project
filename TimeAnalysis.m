@@ -38,6 +38,7 @@ for SNRindB2=[0 10 20 30]
        title('TIME COMPLEXITY vs NUMBER OF USERS');
        xlabel('NUMBER OF USERS');
        ylabel('TIME COMPLEXITY');
+       grid on;
        legend('SA1','SA2','location','northwest')
        x = x+1;
 end
@@ -62,6 +63,7 @@ for K = [5 10 15 20]
        title('TIME COMPLEXITY vs SNR in dB');
        xlabel('SNR in dB');
        ylabel('TIME COMPLEXITY');
+       grid on
        legend('SA1','SA2','location','northwest')
        x = x+1;
 end
